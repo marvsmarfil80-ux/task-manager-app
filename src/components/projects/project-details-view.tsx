@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useProject } from "@/hooks/use-projects";
 import { ProjectFormDialog } from "./project-form-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
+import { ProjectTasksTab } from "./project-tasks-tab";
 
 export function ProjectDetailsView({ id }: { id: number }) {
   const { data: project, isLoading, isError } = useProject(id);
@@ -82,10 +83,8 @@ export function ProjectDetailsView({ id }: { id: number }) {
         </TabsContent>
 
         <TabsContent value="tasks" className="pt-4">
-          <p className="text-sm text-muted-foreground">
-            Task management for this project is coming in Phase 4.
-          </p>
-        </TabsContent>
+          <ProjectTasksTab projectId={project.id} />
+      </TabsContent>
       </Tabs>
 
       <ProjectFormDialog open={editOpen} onOpenChange={setEditOpen} project={project} />
