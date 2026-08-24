@@ -38,7 +38,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </button>
       </div>
 
-      <TooltipProvider delayDuration={200}>
+      <TooltipProvider delay={200}>
         <nav aria-label="Main navigation" className="flex flex-col gap-1">
           {navItems.map(({ label, href, icon: Icon }) => {
             const active = isNavItemActive(pathname, href);
@@ -63,7 +63,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <div key={label}>
                 {collapsed ? (
                   <Tooltip>
-                    <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                    <TooltipTrigger render={linkContent} />
                     <TooltipContent side="right">{label}</TooltipContent>
                   </Tooltip>
                 ) : (
