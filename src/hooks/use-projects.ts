@@ -35,6 +35,9 @@ export function useUpdateProject() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["projects", updated.id] });
+      // Task objects embed their full project (name, owner) — a renamed
+      // or reassigned project would otherwise look stale on every task card.
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
@@ -45,6 +48,7 @@ export function useDeleteProject() {
     mutationFn: (id: number) => api.projects.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }

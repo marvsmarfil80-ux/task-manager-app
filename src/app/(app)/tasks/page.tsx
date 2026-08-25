@@ -29,7 +29,7 @@ export default function TasksPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
-  const [assigningTask, setAssigningTask] = useState<Task | null>(null);
+  const [assigningTaskId, setAssigningTaskId] = useState<number | null>(null);
 
   const projectItems = [
     { label: "All Projects", value: "all" },
@@ -115,12 +115,21 @@ export default function TasksPage() {
       )}
 
       {!isLoading && !isError && tasks && tasks.length > 0 && (
-        <TaskBoard tasks={filtered} onEdit={openEdit} onDelete={setDeletingTask} onAssign={setAssigningTask} />
+        <TaskBoard
+          tasks={filtered}
+          onEdit={openEdit}
+          onDelete={setDeletingTask}
+          onAssign={(task) => setAssigningTaskId(task.id)}
+        />
       )}
 
       <TaskFormDialog open={formOpen} onOpenChange={setFormOpen} task={editingTask} />
       <DeleteTaskDialog open={!!deletingTask} onOpenChange={(open) => !open && setDeletingTask(null)} task={deletingTask} />
-      <AssignUsersDialog open={!!assigningTask} onOpenChange={(open) => !open && setAssigningTask(null)} task={assigningTask} />
+      <AssignUsersDialog
+        open={assigningTaskId !== null}
+        onOpenChange={(open) => !open && setAssigningTaskId(null)}
+        taskId={assigningTaskId}
+      />
     </div>
   );
 }

@@ -16,7 +16,7 @@ export function ProjectTasksTab({ projectId }: { projectId: number }) {
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
-  const [assigningTask, setAssigningTask] = useState<Task | null>(null);
+  const [assigningTaskId, setAssigningTaskId] = useState<number | null>(null);
 
   const projectTasks = (tasks ?? []).filter((t) => t.project_id === projectId);
 
@@ -58,12 +58,22 @@ export function ProjectTasksTab({ projectId }: { projectId: number }) {
           <p>No tasks in this project yet.</p>
         </div>
       ) : (
-        <TaskBoard tasks={projectTasks} showProject={false} onEdit={openEdit} onDelete={setDeletingTask} onAssign={setAssigningTask} />
+        <TaskBoard
+          tasks={projectTasks}
+          showProject={false}
+          onEdit={openEdit}
+          onDelete={setDeletingTask}
+          onAssign={(task) => setAssigningTaskId(task.id)}
+        />
       )}
 
       <TaskFormDialog open={formOpen} onOpenChange={setFormOpen} task={editingTask} defaultProjectId={projectId} />
       <DeleteTaskDialog open={!!deletingTask} onOpenChange={(open) => !open && setDeletingTask(null)} task={deletingTask} />
-      <AssignUsersDialog open={!!assigningTask} onOpenChange={(open) => !open && setAssigningTask(null)} task={assigningTask} />
+      <AssignUsersDialog
+        open={assigningTaskId !== null}
+        onOpenChange={(open) => !open && setAssigningTaskId(null)}
+        taskId={assigningTaskId}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import type { TaskCreate, TaskUpdate } from "@/types";
+import type { TaskCreate, TaskUpdate, Task, User } from "@/types";
 
 export function useTasks() {
   return useQuery({
@@ -38,7 +38,36 @@ export function useAssignUser() {
   return useMutation({
     mutationFn: ({ taskId, userId }: { taskId: number; userId: number }) =>
       api.tasks.assign(taskId, { user_id: userId }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+    onMutate: async ({ taskId, userId }) => {
+      // Pause any in-flight refetch so it doesn't overwrite our optimistic edit
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
+      const users = queryClient.getQueryData<User[]>(["users"]);
+      const user = users?.find((u) => u.id === userId);
+
+      if (previousTasks && user) {
+        queryClient.setQueryData<Task[]>(["tasks"], (old) =>
+          old?.map((t) =>
+            t.id === taskId && !t.assignees.some((a) => a.id === userId)
+              ? { ...t, assignees: [...t.assignees, user] }
+              : t
+          )
+        );
+      }
+
+      // Snapshot returned here is handed to onError if the request fails
+      return { previousTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["tasks"], context.previousTasks);
+      }
+    },
+    onSettled: () => {
+      // Reconcile with the real server state regardless of success/failure
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 }
 
@@ -47,6 +76,26 @@ export function useUnassignUser() {
   return useMutation({
     mutationFn: ({ taskId, userId }: { taskId: number; userId: number }) =>
       api.tasks.unassign(taskId, userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+    onMutate: async ({ taskId, userId }) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
+
+      queryClient.setQueryData<Task[]>(["tasks"], (old) =>
+        old?.map((t) =>
+          t.id === taskId ? { ...t, assignees: t.assignees.filter((a) => a.id !== userId) } : t
+        )
+      );
+
+      return { previousTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["tasks"], context.previousTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 }

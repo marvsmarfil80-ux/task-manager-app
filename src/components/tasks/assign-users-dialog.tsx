@@ -14,20 +14,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/hooks/use-users";
-import { useAssignUser, useUnassignUser } from "@/hooks/use-tasks";
-import type { Task } from "@/types";
+import { useTasks, useAssignUser, useUnassignUser } from "@/hooks/use-tasks";
 
 interface AssignUsersDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: Task | null;
+  taskId: number | null;
 }
 
-export function AssignUsersDialog({ open, onOpenChange, task }: AssignUsersDialogProps) {
+export function AssignUsersDialog({ open, onOpenChange, taskId }: AssignUsersDialogProps) {
+  const { data: tasks } = useTasks();
   const { data: users, isLoading: usersLoading } = useUsers();
   const assignUser = useAssignUser();
   const unassignUser = useUnassignUser();
   const [search, setSearch] = useState("");
+
+  // Always derive the task fresh from the live query cache instead of a
+  // stale snapshot passed in at dialog-open time — this is what keeps the
+  // checkboxes in sync with the backend after every assign/unassign call.
+  const task = tasks?.find((t) => t.id === taskId) ?? null;
 
   if (!task) return null;
 
@@ -36,7 +41,7 @@ export function AssignUsersDialog({ open, onOpenChange, task }: AssignUsersDialo
   const isMutating = assignUser.isPending || unassignUser.isPending;
 
   function toggleUser(userId: number, currentlyAssigned: boolean) {
-    if (!task) return;
+    if (!task || isMutating) return;
     if (currentlyAssigned) {
       unassignUser.mutate({ taskId: task.id, userId });
     } else {
