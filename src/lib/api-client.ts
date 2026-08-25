@@ -29,12 +29,19 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`API error ${res.status} on ${path}: ${body}`);
+    const bodyText = await res.text().catch(() => "");
+    let message = bodyText || `API error ${res.status} on ${path}`;
+    try {
+      const parsed = JSON.parse(bodyText);
+      if (parsed?.detail) {
+        message = typeof parsed.detail === "string" ? parsed.detail : JSON.stringify(parsed.detail);
+      }
+    } catch {
+      // response wasn't JSON — keep the raw text as the message
+    }
+    throw new Error(message);
   }
 
-  // DELETE endpoints in main.py return a small JSON body, but guard
-  // against empty responses (e.g. 204) just in case.
   const text = await res.text();
   return (text ? JSON.parse(text) : undefined) as T;
 }

@@ -45,10 +45,7 @@ export function DeleteUserDialog({ open, onOpenChange, user }: DeleteUserDialogP
         </AlertDialogHeader>
 
         {deleteUser.isError && (
-          <p className="text-sm text-destructive">
-            Failed to delete user. They may still own a project or be assigned to a task — check the backend
-            before retrying.
-          </p>
+          <p className="text-sm text-destructive">{deleteUser.error.message}</p>
         )}
 
         <AlertDialogFooter>

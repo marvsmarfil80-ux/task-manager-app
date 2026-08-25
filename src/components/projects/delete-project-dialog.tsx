@@ -46,9 +46,8 @@ export function DeleteProjectDialog({ open, onOpenChange, project, onDeleted }: 
         </AlertDialogHeader>
 
         {deleteProject.isError && (
-          <p className="text-sm text-destructive">Failed to delete project. Try again.</p>
+          <p className="text-sm text-destructive">{deleteProject.error.message}</p>
         )}
-
         <AlertDialogFooter>
           <AlertDialogCancel disabled={deleteProject.isPending}>Cancel</AlertDialogCancel>
           <Button variant="destructive" onClick={handleDelete} disabled={deleteProject.isPending}>
