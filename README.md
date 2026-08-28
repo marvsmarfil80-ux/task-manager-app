@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Manager
+
+A full-stack task and project management app built as a learning project — Next.js frontend + FastAPI backend, with real authentication, project/task CRUD, Kanban-style task boards, and multi-user task assignment.
+
+## Features
+
+- **Auth** — JWT-based login/register, `httpOnly` cookie sessions, bcrypt password hashing
+- **Projects** — full CRUD, private or shared (shared projects can be edited by any logged-in user; only the owner can delete)
+- **Tasks** — Kanban board (To Do / In Progress / Done), full CRUD, multi-user assignment
+- **Team** — user management (add/edit/delete)
+- **Dashboard** — live stats, recent projects/tasks, tasks-by-status chart
+- Light/dark mode, responsive layout (mobile/tablet/desktop)
+
+## Tech Stack
+
+- **Next.js 16** (App Router, Turbopack), **TypeScript**, **Tailwind CSS v4**
+- **shadcn/ui** (Base UI variant)
+- **TanStack Query** — server state & caching
+- **React Hook Form** + **Zod** — forms & validation
+- **Lucide React** — icons, **Sonner** — toasts, **Recharts** — charts
+
+Backend repo: [task_manager](https://github.com/marvsmarfil80-ux/task_manager) (FastAPI + PostgreSQL + SQLAlchemy + Alembic)
 
 ## Getting Started
 
-First, run the development server:
+### 1. Backend must be running first
+
+This app expects a FastAPI backend at `http://localhost:8000`. See the backend repo for setup. Make sure its CORS config allows `http://localhost:3000`.
+
+### 2. Environment variables
+
+Create `.env.local` in the project root:
+
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+
+> Use `localhost`, not `127.0.0.1` — the two are treated as different sites by the browser, which breaks cookie-based auth between frontend and backend even on the same machine.
+
+### 3. Install and run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). You'll be redirected to `/login` if you're not authenticated — register a new account or use existing seeded credentials from the backend.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+src/
+├── app/
+│ ├── (app)/ # Authenticated routes — shared sidebar/topbar layout
+│ │ ├── page.tsx # Dashboard
+│ │ ├── projects/
+│ │ ├── tasks/
+│ │ └── users/
+│ ├── login/
+│ └── register/
+├── components/
+│ ├── ui/ # shadcn primitives
+│ ├── layout/ # Sidebar, Topbar, MobileSidebar
+│ ├── dashboard/
+│ ├── projects/
+│ ├── tasks/
+│ └── users/
+├── hooks/ # TanStack Query hooks (one per resource)
+├── lib/
+│ ├── api-client.ts # Single typed fetch wrapper — all API calls go through here
+│ └── validations/ # Zod schemas per form
+└── types/ # Shared TypeScript types mirroring the backend schemas
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## Notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- All API requests use `credentials: "include"` so the browser sends the auth cookie on every call.
+- Form validation schemas in `lib/validations/` are kept in sync with the backend's Pydantic schemas by hand — if the backend changes a field, update both sides.
