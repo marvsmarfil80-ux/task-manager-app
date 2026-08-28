@@ -67,7 +67,7 @@ export function TaskCard({ task, showProject = true, onEdit, onDelete, onAssign 
         </DropdownMenu>
       </CardHeader>
       <CardContent className="space-y-3">
-        {showProject && <p className="text-xs text-muted-foreground">{task.project.name}</p>}
+                {showProject && <p className="text-xs text-muted-foreground truncate">{task.project.name}</p>}
 
         <Select items={statusItems} value={task.status} onValueChange={handleStatusChange} disabled={updateTask.isPending}>
           <SelectTrigger className="h-7 text-xs w-full">

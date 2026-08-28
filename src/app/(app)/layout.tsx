@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
@@ -21,6 +22,22 @@ function getTitle(pathname: string): string {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: user, isLoading, isError } = useCurrentUser();
+
+  useEffect(() => {
+    if (!isLoading && isError) {
+      router.replace("/login");
+    }
+  }, [isLoading, isError, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">

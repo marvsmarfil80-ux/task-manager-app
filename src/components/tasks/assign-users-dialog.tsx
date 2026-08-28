@@ -51,7 +51,7 @@ export function AssignUsersDialog({ open, onOpenChange, taskId }: AssignUsersDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+            <DialogContent className="max-h-[85vh] overflow-y-auto"></DialogContent>
         <DialogHeader>
           <DialogTitle>Assign Users — {task.title}</DialogTitle>
         </DialogHeader>
@@ -89,7 +89,7 @@ export function AssignUsersDialog({ open, onOpenChange, taskId }: AssignUsersDia
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>Done</Button>
         </DialogFooter>
-      </DialogContent>
+            <DialogContent className="max-h-[85vh] overflow-y-auto"></DialogContent>
     </Dialog>
   );
 }

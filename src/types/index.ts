@@ -7,6 +7,7 @@ export interface User {
 export interface UserCreate {
   name: string;
   email: string;
+  password: string;
 }
 
 export interface UserUpdate {
@@ -19,19 +20,20 @@ export interface Project {
   name: string;
   description: string | null;
   owner_id: number;
+  is_shared: boolean;
   owner: User;
 }
 
 export interface ProjectCreate {
   name: string;
   description?: string | null;
-  owner_id: number;
+  is_shared?: boolean;
 }
 
 export interface ProjectUpdate {
   name?: string;
   description?: string | null;
-  owner_id?: number;
+  is_shared?: boolean;
 }
 
 export type TaskStatus = "todo" | "in_progress" | "done";
@@ -58,4 +60,15 @@ export interface TaskUpdate {
 
 export interface TaskAssign {
   user_id: number;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
 }

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,7 @@ import type { User } from "@/types";
 interface UserFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user?: User; // presence = edit mode, absence = create mode
+  user?: User;
 }
 
 export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps) {
@@ -37,15 +38,12 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
-    defaultValues: {
-      name: user?.name ?? "",
-      email: user?.email ?? "",
-    },
+    defaultValues: { name: user?.name ?? "", email: user?.email ?? "", password: "" },
   });
 
   useEffect(() => {
     if (open) {
-      form.reset({ name: user?.name ?? "", email: user?.email ?? "" });
+      form.reset({ name: user?.name ?? "", email: user?.email ?? "", password: "" });
     }
   }, [open, user, form]);
 
@@ -53,11 +51,20 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
   const mutationError = isEdit ? updateUser.error : createUser.error;
 
   async function onSubmit(values: UserFormValues) {
+    // Password is only required when creating a new account — the backend's
+    // UserUpdate schema doesn't support changing it here.
+    if (!isEdit && (!values.password || values.password.length < 8)) {
+      form.setError("password", { message: "Password must be at least 8 characters" });
+      return;
+    }
+
     try {
       if (isEdit && user) {
-        await updateUser.mutateAsync({ id: user.id, data: values });
+        await updateUser.mutateAsync({ id: user.id, data: { name: values.name, email: values.email } });
+        toast.success("User updated");
       } else {
-        await createUser.mutateAsync(values);
+        await createUser.mutateAsync({ name: values.name, email: values.email, password: values.password! });
+        toast.success("User added");
       }
       onOpenChange(false);
       form.reset();
@@ -68,7 +75,7 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit User" : "Add User"}</DialogTitle>
         </DialogHeader>
@@ -103,11 +110,23 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
               )}
             />
 
-            {mutationError && (
-              <p className="text-sm text-destructive">
-                {isEdit ? "Failed to update user." : "Failed to create user. The email may already be in use."}
-              </p>
+            {!isEdit && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="At least 8 characters" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
+
+            {mutationError && <p className="text-sm text-destructive">{mutationError.message}</p>}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>

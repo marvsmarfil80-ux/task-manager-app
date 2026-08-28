@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useDeleteProject } from "@/hooks/use-projects";
 import type { Project } from "@/types";
+import { toast } from "sonner";
 
 interface DeleteProjectDialogProps {
   open: boolean;
@@ -25,10 +26,10 @@ export function DeleteProjectDialog({ open, onOpenChange, project, onDeleted }: 
 
   async function handleDelete() {
     if (!project) return;
-    try {
+        try {
       await deleteProject.mutateAsync(project.id);
+      toast.success("Project deleted");
       onOpenChange(false);
-      onDeleted?.();
     } catch {
       // surfaced below via deleteProject.isError
     }

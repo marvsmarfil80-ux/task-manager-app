@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useDeleteTask } from "@/hooks/use-tasks";
 import type { Task } from "@/types";
+import { toast } from "sonner";
 
 interface DeleteTaskDialogProps {
   open: boolean;
@@ -25,7 +26,8 @@ export function DeleteTaskDialog({ open, onOpenChange, task }: DeleteTaskDialogP
   async function handleDelete() {
     if (!task) return;
     try {
-      await deleteTask.mutateAsync(task.id);
+            await deleteTask.mutateAsync(task.id);
+      toast.success("Task deleted");
       onOpenChange(false);
     } catch {
       // surfaced below

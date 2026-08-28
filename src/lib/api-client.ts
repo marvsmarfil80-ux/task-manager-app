@@ -9,19 +9,22 @@ import type {
   TaskCreate,
   TaskUpdate,
   TaskAssign,
+  LoginPayload,
+  RegisterPayload,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
-  throw new Error(
-    "NEXT_PUBLIC_API_URL is not set. Check your .env.local file."
-  );
+  throw new Error("NEXT_PUBLIC_API_URL is not set. Check your .env.local file.");
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
+    // Required so the browser sends/receives the httpOnly session cookie
+    // across origins (frontend :3000 -> backend :8000).
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
@@ -47,6 +50,12 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  auth: {
+    register: (data: RegisterPayload) => apiFetch<User>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
+    login: (data: LoginPayload) => apiFetch<User>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+    logout: () => apiFetch<{ detail: string }>("/auth/logout", { method: "POST" }),
+    me: () => apiFetch<User>("/auth/me"),
+  },
   users: {
     list: () => apiFetch<User[]>("/users/"),
     create: (data: UserCreate) =>

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -78,11 +79,11 @@ export function TaskFormDialog({ open, onOpenChange, task, defaultProjectId }: T
   async function onSubmit(values: z.output<typeof taskFormSchema>) {
     try {
       if (isEdit && task) {
-        // Backend's TaskUpdate schema only accepts title/status — project
-        // cannot be reassigned through this endpoint, so we only send those two.
         await updateTask.mutateAsync({ id: task.id, data: { title: values.title, status: values.status } });
+        toast.success("Task updated");
       } else {
         await createTask.mutateAsync(values);
+        toast.success("Task created");
       }
       onOpenChange(false);
       form.reset();
@@ -93,7 +94,7 @@ export function TaskFormDialog({ open, onOpenChange, task, defaultProjectId }: T
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Task" : "Create Task"}</DialogTitle>
         </DialogHeader>
@@ -179,9 +180,7 @@ export function TaskFormDialog({ open, onOpenChange, task, defaultProjectId }: T
               )}
             />
 
-            {mutationError && (
-              <p className="text-sm text-destructive">{isEdit ? "Failed to update task." : "Failed to create task."}</p>
-            )}
+            {mutationError && <p className="text-sm text-destructive">{mutationError.message}</p>}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>

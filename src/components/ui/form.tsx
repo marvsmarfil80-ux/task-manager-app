@@ -94,4 +94,11 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   );
 }
 
-export { useFormField, Form, FormItem, FormLabel, FormControl, FormMessage, FormField };
+function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
+  const { formDescriptionId } = useFormField();
+  return (
+    <p id={formDescriptionId} className={cn("text-muted-foreground text-sm", className)} {...props} />
+  );
+}
+
+export { useFormField, Form, FormItem, FormLabel, FormControl, FormMessage, FormDescription, FormField };
