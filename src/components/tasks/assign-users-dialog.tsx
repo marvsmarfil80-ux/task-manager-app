@@ -29,9 +29,6 @@ export function AssignUsersDialog({ open, onOpenChange, taskId }: AssignUsersDia
   const unassignUser = useUnassignUser();
   const [search, setSearch] = useState("");
 
-  // Always derive the task fresh from the live query cache instead of a
-  // stale snapshot passed in at dialog-open time — this is what keeps the
-  // checkboxes in sync with the backend after every assign/unassign call.
   const task = tasks?.find((t) => t.id === taskId) ?? null;
 
   if (!task) return null;
@@ -51,7 +48,7 @@ export function AssignUsersDialog({ open, onOpenChange, taskId }: AssignUsersDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[85vh] overflow-y-auto"></DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Assign Users — {task.title}</DialogTitle>
         </DialogHeader>
@@ -89,7 +86,7 @@ export function AssignUsersDialog({ open, onOpenChange, taskId }: AssignUsersDia
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>Done</Button>
         </DialogFooter>
-            <DialogContent className="max-h-[85vh] overflow-y-auto"></DialogContent>
+      </DialogContent>
     </Dialog>
   );
 }
